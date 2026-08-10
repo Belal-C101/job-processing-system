@@ -51,6 +51,9 @@ async function jopSystem() {
         "\nCreated At: " + newJob.createdAt,
       );
     } else if (trimmedInput === "2") {
+      if (jobList.length === 0) {
+        console.log("No jobs at the moment");
+      }
       const listBy = [
         "1. List All Jobs",
         "2. List Jobs By Status",
@@ -78,9 +81,6 @@ async function jopSystem() {
         });
       } else if (trimmedChoice === "2") {
         const jobStatus = [...new Set(jobList.map((job) => job.status))];
-        if (jobList.length === 0) {
-          console.log("No jobs at the moment");
-        }
         console.log("Choose From: ", jobStatus);
         const statusInput = (
           await rl.question("Write the Status: ")
