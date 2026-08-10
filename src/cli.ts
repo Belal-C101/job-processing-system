@@ -53,6 +53,7 @@ async function jopSystem() {
     } else if (trimmedInput === "2") {
       if (jobList.length === 0) {
         console.log("No jobs at the moment");
+        continue;
       }
       const listBy = [
         "1. List All Jobs",
