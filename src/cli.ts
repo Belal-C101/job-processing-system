@@ -5,7 +5,7 @@
 
 import * as readline from "node:readline/promises";
 
-async function jopSystems() {
+async function jopSystem() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -21,24 +21,27 @@ async function jopSystems() {
   }
 
   const input = await rl.question("Enter a number: ");
-  // Convert the text into the actual mathematical number
-  const userNumber: number = parseInt(input, 10);
+  const trimmedInput = input.trim();
 
-  // Check if the user typed letters instead of a number
-  if (!isNaN(userNumber)) {
-    if (input === "1") {
-      console.log(`Choosed: ${jps[0]}`);
-    } else if (input === "2") {
-      console.log(`Choosed: ${jps[1]}`);
-    } else if (input === "3") {
-      console.log(`Choosed: ${jps[2]}`);
-    } else {
-      console.log("Invalid option");
-    }
+  // Ignore letter input instead of treating it as an invalid menu choice.
+  if (!/^\d+$/.test(trimmedInput)) {
+    rl.close();
   }
 
-  // Hang up the intercom so your program can finish and exit
+  if (trimmedInput === "1") {
+    console.log(`Choosed: ${jps[0]}`);
+  } else if (trimmedInput === "2") {
+    console.log(`Choosed: ${jps[1]}`);
+  } else if (trimmedInput === "3") {
+    console.log(`Choosed: ${jps[2]}`, "\n", "GoodBye!");
+    rl.close();
+    return;
+  } else {
+    console.log("Invalid option, Please Choose From Provided List");
+  }
+
   rl.close();
+  jopSystem();
 }
 
-jopSystems();
+jopSystem();
