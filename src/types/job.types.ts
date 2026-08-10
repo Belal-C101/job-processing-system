@@ -1,6 +1,6 @@
 export type Job = {
   id: string;
-  name: string;
+  type: string;
   status: "PENDING" | "COMPLETED";
   createdAt: Date;
 };
