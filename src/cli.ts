@@ -43,7 +43,16 @@ async function jopSystem() {
         createdAt: new Date(),
       };
       jobList.push(newJob);
-      console.log(newJob);
+      console.log("\n=== Added Job ===");
+      jobList.forEach((job) => {
+        console.log(
+          "ID: " + job.id,
+          "\nType: " + job.type,
+          "\nStatus: " + job.status,
+          "\nCreated At: " + job.createdAt,
+          "\n\n----------------\n\n",
+        );
+      });
     } else if (trimmedInput === "2") {
       const listBy = [
         "1. List All Jobs",
