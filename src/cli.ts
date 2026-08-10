@@ -44,15 +44,12 @@ async function jopSystem() {
       };
       jobList.push(newJob);
       console.log("\n=== Added Job ===");
-      jobList.forEach((job) => {
-        console.log(
-          "ID: " + job.id,
-          "\nType: " + job.type,
-          "\nStatus: " + job.status,
-          "\nCreated At: " + job.createdAt,
-          "\n\n----------------\n\n",
-        );
-      });
+      console.log(
+        "ID: " + newJob.id,
+        "\nType: " + newJob.type,
+        "\nStatus: " + newJob.status,
+        "\nCreated At: " + newJob.createdAt,
+      );
     } else if (trimmedInput === "2") {
       const listBy = [
         "1. List All Jobs",
@@ -69,7 +66,16 @@ async function jopSystem() {
       const choice = await rl.question("Enter a Number: ");
       const trimmedChoice = choice.trim();
       if (trimmedChoice === "1") {
-        console.log(jobList);
+        console.log("\n=== ALl Jobs ===");
+        jobList.forEach((job) => {
+          console.log(
+            "ID: " + job.id,
+            "\nType: " + job.type,
+            "\nStatus: " + job.status,
+            "\nCreated At: " + job.createdAt,
+            "\n\n----------------\n\n",
+          );
+        });
       } else if (trimmedChoice === "2") {
         const jobStatus = [...new Set(jobList.map((job) => job.status))];
         if (jobList.length === 0) {
