@@ -80,45 +80,47 @@ async function jopSystem() {
       } else if (trimmedChoice === "2") {
         const Status = [...new Set(allJobs.map((job) => job.status))];
         console.log("Choose From: ", Status);
-        const jobStatus = await rl.question("Enter Job ID: ");
-      const job = await prisma.job.findUnique({
-        where: { id: jobStatus.trim() },
-      });
-      
+        const jobStatus = await rl.question("Enter Job Status: ");
+        const job = await prisma.job.findMany({
+          where: { status: jobStatus },
+        });
+
         console.log("\n=== Job ===");
 
-        console.log(
-          "ID: " + job?.id,
-          "\nType: " + job?.type,
-          "\nStatus: " + job?.status,
-          "\nCreated At: " + job?.createdAt,
-          "\n\n----------------\n\n",
-        );
-      
+        job.forEach((job) => {
+          console.log(
+            "ID: " + job.id,
+            "\nType: " + job.type,
+            "\nStatus: " + job.status,
+            "\nCreated At: " + job.createdAt,
+            "\n\n----------------\n\n",
+          );
+        });
       } else if (trimmedChoice === "3") {
         const type = [...new Set(allJobs.map((t) => t.type))];
         console.log("Choose From: ", type);
         const jobType = await rl.question("Enter Job Type: ");
-      const job = await prisma.job.findUnique({
-        where: { id: jobType.trim() },
-      });
-      
+        const job = await prisma.job.findMany({
+          where: { type: jobType },
+        });
+
         console.log("\n=== Job ===");
 
-        console.log(
-          "ID: " + job?.id,
-          "\nType: " + job?.type,
-          "\nStatus: " + job?.status,
-          "\nCreated At: " + job?.createdAt,
-          "\n\n----------------\n\n",
-        );
-      
+        job.forEach((job) => {
+          console.log(
+            "ID: " + job.id,
+            "\nType: " + job.type,
+            "\nStatus: " + job.status,
+            "\nCreated At: " + job.createdAt,
+            "\n\n----------------\n\n",
+          );
+        });
       } else if (trimmedChoice === "4") {
         const jobId = await rl.question("Enter Job ID: ");
-      const job = await prisma.job.findUnique({
-        where: { id: jobId.trim() },
-      });
-      
+        const job = await prisma.job.findUnique({
+          where: { id: jobId.trim() },
+        });
+
         console.log("\n=== Job ===");
 
         console.log(
@@ -128,7 +130,6 @@ async function jopSystem() {
           "\nCreated At: " + job?.createdAt,
           "\n\n----------------\n\n",
         );
-      
       }
     } else if (trimmedInput === "3") {
       if (!hasRecords) {
@@ -136,12 +137,8 @@ async function jopSystem() {
         continue;
       }
       const jobId = await rl.question("Enter Job ID: ");
-      
 
-        const updatetBy = [
-        "1. Update Job Type",
-        "2. Update Job Status",
-      ];
+      const updatetBy = ["1. Update Job Type", "2. Update Job Status"];
       const updateMenu = (): void => {
         for (let i = 0; i < updatetBy.length; i++) {
           console.log(updatetBy[i]);
@@ -151,7 +148,10 @@ async function jopSystem() {
       const updateInput = (await rl.question("Enter a Number: ")).trim();
       if (updateInput === "1") {
         const newType = await rl.question("Enter New Type: ");
-        const updateType = await prisma.job.update({where: {id: jobId.trim()}, data: {type: newType}})
+        const updateType = await prisma.job.update({
+          where: { id: jobId.trim() },
+          data: { type: newType },
+        });
         console.log("\n=== Job ===");
         console.log(
           "ID: " + updateType.id,
@@ -162,7 +162,10 @@ async function jopSystem() {
         );
       } else if (updateInput === "2") {
         const newStatus = await rl.question("Enter New Status: ");
-        const updateStatus = await prisma.job.update({where: {id: jobId.trim()}, data: {status: newStatus}})
+        const updateStatus = await prisma.job.update({
+          where: { id: jobId.trim() },
+          data: { status: newStatus },
+        });
         console.log("\n=== Job ===");
         console.log(
           "ID: " + updateStatus.id,
@@ -172,7 +175,6 @@ async function jopSystem() {
           "\n\n----------------\n\n",
         );
       }
-      
     } else if (trimmedInput === "4") {
       console.log(`Choosed: ${job[3]}`, "\n", "GoodBye!");
       break;

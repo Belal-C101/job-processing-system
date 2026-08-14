@@ -7,7 +7,9 @@ async function createSimpleApp() {
   const http = await import("node:http");
   return http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true, message: "Job processing system is running" }));
+    res.end(
+      JSON.stringify({ ok: true, message: "Job processing system is running" }),
+    );
   });
 }
 
