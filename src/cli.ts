@@ -5,9 +5,8 @@
 import "dotenv/config";
 import { prisma } from "./lib/prisma";
 import * as readline from "node:readline/promises";
-import type { Job } from "./types/job.types";
 
-async function jopSystem() {
+export async function jobSystem() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -186,4 +185,4 @@ async function jopSystem() {
   rl.close();
 }
 
-jopSystem();
+jobSystem();
