@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Prisma / Generated files
+# (Keeps your custom generated client out of source control)
+generated/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Build tools & runtime caches
+.agents/
+.neon/
+
+# Operating system files
+.DS_Store
+Thumbs.db
