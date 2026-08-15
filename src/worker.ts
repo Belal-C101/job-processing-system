@@ -73,7 +73,7 @@ export async function worker() {
       console.log(`[${job.id}] FAILED`);
       await prisma.job.update({
         where: { id: job.id },
-        data: { status: "Failed" },
+        data: { status: "FAILED" },
       });
     }
   }
