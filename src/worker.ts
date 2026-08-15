@@ -22,7 +22,7 @@ async function fetch() {
 
 export async function worker() {
   const jobStatus = await prisma.job.findMany({ where: { status: "PENDING" } });
-  const status = ["COMPLETED", "FAILED"] as const;
+  const status = ["COMPLETED", "FAILED", "PENDING"] as const;
   const types = ["EMAIL", "REPORT", "IMAGE", "IMPORT_CSV", "VIDEO_PROCESSING"];
   for (const job of jobStatus) {
     let attempts = job.attempts;
@@ -63,15 +63,22 @@ export async function worker() {
           break;
         }
       } catch (error) {
-        console.log(`Error with processing job id: [${job.id}] \n Retrying...`);
-        if (attempts >= 3) {
+        if (attempts < 3) {
+          await prisma.job.update({
+            where: { id: job.id },
+            data: { status: status[2] },
+          });
+
+          console.log(`[${job.id}] Retrying... Attempt ${attempts + 1}`);
+        } else {
           try {
+            console.error(`Maximum attempts reached`);
             await prisma.job.update({
               where: { id: job.id },
               data: { status: status[1] },
             });
           } catch (e) {
-            console.error(`Failed to set job [${job.id}] to FAILED:`, e);
+            console.error(`Failed Setting job [${job.id}] to: ${status[1]}`, e);
           }
         }
       }
