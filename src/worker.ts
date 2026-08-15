@@ -68,7 +68,14 @@ export async function worker() {
           data: { status: "COMPLETED" },
         });
         console.log(`[${job.id}] COMPLETED`);
-      }
+      } else {
+      console.log(`[${job.id}] PROCESSING - ${jobType}`);
+      console.log(`[${job.id}] FAILED - Unknown job type: ${jobType}`);
+      await prisma.job.update({
+        where: { id: job.id },
+        data: { status: "FAILED" },
+      });
+    }
     } catch (error) {
       console.log(`[${job.id}] FAILED`);
       await prisma.job.update({
