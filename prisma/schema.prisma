@@ -11,4 +11,5 @@ model Job {
   type      String
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
+  attempts  Int      @default(0)
 }
