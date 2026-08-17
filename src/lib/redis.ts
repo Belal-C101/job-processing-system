@@ -6,5 +6,3 @@ const redisConfig = {
 };
 
 export const redisConnection = new Redis(redisConfig);
-
-module.exports = redisConnection;
