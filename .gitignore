@@ -17,3 +17,6 @@ generated/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Firebase
+firebase-debug.log
