@@ -185,4 +185,6 @@ export async function jobSystem() {
   rl.close();
 }
 
-jobSystem();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  jobSystem();
+}
