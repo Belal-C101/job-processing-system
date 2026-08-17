@@ -65,7 +65,11 @@ describe("Worker", () => {
       createdAt: new Date(),
     };
 
-    mockPrisma.job.update.mockResolvedValue({ ...job, attempts: 1, status: "PROCESSING" });
+    mockPrisma.job.update.mockResolvedValue({
+      ...job,
+      attempts: 1,
+      status: "PROCESSING",
+    });
 
     const { fetchData } = await import("../worker");
     const result = fetchData(job);
@@ -97,7 +101,11 @@ describe("Worker", () => {
       createdAt: new Date(),
     };
 
-    mockPrisma.job.update.mockResolvedValue({ ...job, attempts: 1, status: "PROCESSING" });
+    mockPrisma.job.update.mockResolvedValue({
+      ...job,
+      attempts: 1,
+      status: "PROCESSING",
+    });
 
     const { fetchData } = await import("../worker");
     const result = fetchData(job);
@@ -133,8 +141,20 @@ describe("Worker", () => {
 
   it("worker processes multiple jobs concurrently", async () => {
     const jobs = [
-      { id: "job-1", type: "EMAIL", status: "PENDING", attempts: 0, createdAt: new Date() },
-      { id: "job-2", type: "REPORT", status: "PENDING", attempts: 0, createdAt: new Date() },
+      {
+        id: "job-1",
+        type: "EMAIL",
+        status: "PENDING",
+        attempts: 0,
+        createdAt: new Date(),
+      },
+      {
+        id: "job-2",
+        type: "REPORT",
+        status: "PENDING",
+        attempts: 0,
+        createdAt: new Date(),
+      },
     ];
 
     mockPrisma.job.findMany.mockResolvedValue(jobs);
@@ -189,9 +209,7 @@ describe("CLI", () => {
   });
 
   it("continues on invalid non-numeric input", async () => {
-    mockRl.question
-      .mockResolvedValueOnce("abc")
-      .mockResolvedValueOnce("4");
+    mockRl.question.mockResolvedValueOnce("abc").mockResolvedValueOnce("4");
 
     const { jobSystem } = await import("../cli");
     const result = jobSystem();
@@ -206,9 +224,7 @@ describe("CLI", () => {
   it("shows no jobs message when listing with no records", async () => {
     mockPrisma.job.findFirst.mockResolvedValue(null);
     mockPrisma.job.findMany.mockResolvedValue([]);
-    mockRl.question
-      .mockResolvedValueOnce("2")
-      .mockResolvedValueOnce("4");
+    mockRl.question.mockResolvedValueOnce("2").mockResolvedValueOnce("4");
 
     const { jobSystem } = await import("../cli");
     const result = jobSystem();
@@ -239,8 +255,18 @@ describe("CLI", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(logSpy).toHaveBeenCalledWith("\n=== ALl Jobs ===");
-    expect(logSpy.mock.calls.some((call) => call.some((arg) => typeof arg === "string" && arg.includes("ID: 1")))).toBe(true);
-    expect(logSpy.mock.calls.some((call) => call.some((arg) => typeof arg === "string" && arg.includes("Type: EMAIL")))).toBe(true);
+    expect(
+      logSpy.mock.calls.some((call) =>
+        call.some((arg) => typeof arg === "string" && arg.includes("ID: 1")),
+      ),
+    ).toBe(true);
+    expect(
+      logSpy.mock.calls.some((call) =>
+        call.some(
+          (arg) => typeof arg === "string" && arg.includes("Type: EMAIL"),
+        ),
+      ),
+    ).toBe(true);
 
     await result;
   });
@@ -260,16 +286,16 @@ describe("CLI", () => {
   });
 
   it("logs invalid option for out-of-range numeric input", async () => {
-    mockRl.question
-      .mockResolvedValueOnce("5")
-      .mockResolvedValueOnce("4");
+    mockRl.question.mockResolvedValueOnce("5").mockResolvedValueOnce("4");
 
     const { jobSystem } = await import("../cli");
     const result = jobSystem();
 
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(logSpy).toHaveBeenCalledWith("Invalid option, Please Choose From Provided List");
+    expect(logSpy).toHaveBeenCalledWith(
+      "Invalid option, Please Choose From Provided List",
+    );
 
     await result;
   });
