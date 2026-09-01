@@ -19,24 +19,22 @@ export async function worker() {
   new Worker(
     "Worker Queue",
     async (job) => {
-      try {
+      if (types.includes(job.data.type)) {
+        await job.updateData({
+          ...job.data,
+          status: "PROCESSING",
+        });
+        // simulated work
+        await sleep(5000);
 
-        if (job.data.type.includes(types)) {
-          await job.updateData({
-            ...job.data,
-            status: "PROCESSING",
-          });
-          pushUpdate(job.data.id, job.data.status, job.attemptsMade);
-        } else {
-          await job.updateData({
-            ...job.data,
-            status: "FAILED (UNKNOWN_TYPE)",
-          });
-          pushUpdate(job.data.id, job.data.status, job.attemptsMade);
-          throw new UnrecoverableError("UNKNOWN_TYPE");
-        }
-      } catch (e) {
-        throw new Error("TRASIENT ERROR");
+        await pushUpdate(job.data.id, "COMPLETED", job.attemptsMade);
+      } else {
+        await job.updateData({
+          ...job.data,
+          status: "FAILED (UNKNOWN_TYPE)",
+        });
+        pushUpdate(job.data.id, job.data.status, job.attemptsMade);
+        throw new UnrecoverableError("UNKNOWN_TYPE");
       }
     },
     {
