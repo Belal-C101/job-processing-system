@@ -1,8 +1,6 @@
-const Redis = require("ioredis");
+import { Redis } from "ioredis";
 
-const redisConfig = {
-  port: 6379,
+export const redisConnection = new Redis({
   host: "127.0.0.1",
-};
-
-export const redisConnection = new Redis(redisConfig);
+  port: 6379,
+});

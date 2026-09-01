@@ -13,6 +13,7 @@ generated/
 # Build tools & runtime caches
 .agents/
 .neon/
+.kilo/
 
 # Operating system files
 .DS_Store
