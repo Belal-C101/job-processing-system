@@ -46,12 +46,21 @@ export async function jobSystem() {
           type: jobType,
         },
       });
-      // Add a job of type 'jobType' to the 'WorkerQueue' queue
-      await workerQueue.add(`${jobType}`, {
-        id: newJob.id,
-        type: jobType,
-        createdAt: newJob.createdAt,
-      });
+      await workerQueue.add(
+        jobType,
+        {
+          id: newJob.id,
+          type: jobType,
+          createdAt: newJob.createdAt,
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: "fixed",
+            delay: 2000,
+          },
+        },
+      );
     } else if (trimmedInput === "2") {
       const allJobs = await prisma.job.findMany({
         select: { id: true, type: true, status: true, createdAt: true },

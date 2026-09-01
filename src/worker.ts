@@ -2,7 +2,8 @@ import "dotenv/config";
 import { prisma } from "./lib/prisma";
 import pLimit from "p-limit";
 import { workerQueue } from "./queue";
-import { Queue, Worker } from "bullmq";
+import { Queue, UnrecoverableError, Worker } from "bullmq";
+import { redisConnection } from "./lib/redis";
 import { Redis } from "ioredis";
 import type { UUID } from "node:crypto";
 
@@ -12,64 +13,44 @@ const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 // Add a job to the queue
-async function addJob() {
-  const pendingJobs = await prisma.job.findMany({
-    where: { status: "PENDING" },
-  });
-  if (pendingJobs.length > 0) {
-    await workerQueue.addBulk(
-      pendingJobs.map((job) => ({
-        name: "Queued Job",
-        data: job,
-        concurrency: 3,
-        opts: {
-          attempts: 3,
-          backoff: {
-            type: "fixed",
-            delay: 2000,
-          },
-        },
-      })),
-    );
-    console.log("Jobs added to queue");
-  }
-  worker();
-}
 
 export async function worker() {
-  let start = 0;
-  const pageSize = 50;
-  let hasMore = true;
+  const types = ["EMAIL", "REPORT", "IMAGE", "IMPORT_CSV", "VIDEO_PROCESSING"];
+  new Worker(
+    "Worker Queue",
+    async (job) => {
+      try {
 
-  while (hasMore) {
-    const jobs = await workerQueue.getJobs(
-      ["waiting"],
-      start,
-      start + pageSize - 1,
-      true,
-    );
-    if (jobs.length === 0) {
-      hasMore = false;
-      break;
-    }
-    for (const job of jobs) {
-      console.log(`Job ID: ${job.id}, Data:`, job.data);
-      await job.updateData({
-        ...job.data,
-        status: "PROCESSING",
-      });
-      pushUpdate(job.data.id, job.data.status, job.opts.attempts);
-    }
-    start += pageSize;
-  }
+        if (job.data.type.includes(types)) {
+          await job.updateData({
+            ...job.data,
+            status: "PROCESSING",
+          });
+          pushUpdate(job.data.id, job.data.status, job.attemptsMade);
+        } else {
+          await job.updateData({
+            ...job.data,
+            status: "FAILED (UNKNOWN_TYPE)",
+          });
+          pushUpdate(job.data.id, job.data.status, job.attemptsMade);
+          throw new UnrecoverableError("UNKNOWN_TYPE");
+        }
+      } catch (e) {
+        throw new Error("TRASIENT ERROR");
+      }
+    },
+    {
+      connection: redisConnection,
+      concurrency: 3,
+    },
+  );
 }
 
-async function pushUpdate(id: UUID, status: string, attempts?: number) {
+async function pushUpdate(id: UUID, status: string, attempts: number) {
   await prisma.job.update({
     where: { id: id },
-    data: { status: status, ...(attempts !== undefined && { attempts }) },
+    data: { status: status, attempts: attempts },
   });
-  queueCleanUp();
 }
 
 async function queueCleanUp() {
@@ -77,4 +58,5 @@ async function queueCleanUp() {
   console.log("All completed jobs removed!");
 }
 
-addJob();
+worker();
+queueCleanUp();
