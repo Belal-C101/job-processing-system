@@ -20,20 +20,9 @@ export async function worker() {
     "Worker Queue",
     async (job) => {
       if (types.includes(job.data.type)) {
-        await job.updateData({
-          ...job.data,
-          status: "PROCESSING",
-        });
-        // simulated work
-        await sleep(5000);
-
         await pushUpdate(job.data.id, "COMPLETED", job.attemptsMade);
       } else {
-        await job.updateData({
-          ...job.data,
-          status: "FAILED (UNKNOWN_TYPE)",
-        });
-        pushUpdate(job.data.id, job.data.status, job.attemptsMade);
+        pushUpdate(job.data.id, "FAILED (UNKNOWN_TYPE)", job.attemptsMade);
         throw new UnrecoverableError("UNKNOWN_TYPE");
       }
     },
