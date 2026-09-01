@@ -19,10 +19,11 @@ export async function worker() {
   new Worker(
     "Worker Queue",
     async (job) => {
-      if (types.includes(job.data.type)) {
+      const jobType = job.data.type.trim().toUpperCase();
+      if (types.includes(jobType)) {
         await pushUpdate(job.data.id, "COMPLETED", job.attemptsMade);
       } else {
-        pushUpdate(job.data.id, "FAILED (UNKNOWN_TYPE)", job.attemptsMade);
+        await pushUpdate(job.data.id, "FAILED (UNKNOWN_TYPE)", job.attemptsMade);
         throw new UnrecoverableError("UNKNOWN_TYPE");
       }
     },
