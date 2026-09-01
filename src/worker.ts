@@ -21,6 +21,14 @@ async function addJob() {
       pendingJobs.map((job) => ({
         name: "Queued Job",
         data: job,
+        concurrency: 3,
+        opts: {
+          attempts: 3,
+          backoff: {
+            type: "fixed",
+            delay: 2000,
+          },
+        },
       })),
     );
     console.log("Jobs added to queue");
@@ -54,89 +62,25 @@ export async function worker() {
     }
     start += pageSize;
   }
-};
+}
 
 async function pushUpdate(id: UUID, status: string) {
-  const update = await prisma.job.update({ where: { id: id }, data: {status: status} })
-}
+  let attempts = 0;
 
-async function fetchh() {
-  console.log("Worker started...\nWaiting for jobs...");
-  while (true) {
-    const newNumberOfJobs = await prisma.job.count({
-      where: { status: "PENDING" },
-    });
-
-    if (newNumberOfJobs > 0) {
-      console.log(`Processing ${newNumberOfJobs} Jobs`);
-      await worker();
-      console.log("Worker started...\nWaiting for jobs...");
-    }
-    await sleep(10000);
-  }
-}
-
-export async function fetchData(job: any) {
-  const status = ["COMPLETED", "FAILED", "PENDING"] as const;
-  const types = ["EMAIL", "REPORT", "IMAGE", "IMPORT_CSV", "VIDEO_PROCESSING"];
-  let attempts = job.attempts;
-  while (attempts < 3) {
-    try {
-      attempts += 1;
-      await prisma.job.update({
-        where: { id: job.id },
+      const updateattempts = await prisma.job.update({
+        where: { id: id },
         data: { attempts: attempts },
       });
-      console.log(`Processing ${job.id}`);
-      const jobType = job.type.trim().toUpperCase();
-      await prisma.job.update({
-        where: { id: job.id },
-        data: { status: "PROCESSING" },
+      const update = await prisma.job.update({
+        where: { id: id },
+        data: { status: status },
       });
-      await sleep(5000);
+  queueCleanUp();
+}
 
-      if (types.includes(jobType)) {
-        console.log(`[${job.id}] PROCESSING - ${jobType}`);
-        await prisma.job.update({
-          where: { id: job.id },
-          data: { status: status[0] },
-        });
-        console.log(`[${job.id}] COMPLETED \n -----------`);
-        await sleep(5000);
-        break;
-      } else {
-        console.log(`[${job.id}] PROCESSING - ${jobType}`);
-        console.log(
-          `[${job.id}] FAILED - Unknown job type: ${jobType}  \n -----------`,
-        );
-        await prisma.job.update({
-          where: { id: job.id },
-          data: { status: status[1] },
-        });
-        await sleep(5000);
-        break;
-      }
-    } catch (error) {
-      if (attempts < 3) {
-        await prisma.job.update({
-          where: { id: job.id },
-          data: { status: status[2] },
-        });
-
-        console.log(`[${job.id}] Retrying... Attempt ${attempts + 1}`);
-      } else {
-        try {
-          console.error(`Maximum attempts reached`);
-          await prisma.job.update({
-            where: { id: job.id },
-            data: { status: status[1] },
-          });
-        } catch (e) {
-          console.error(`Failed Setting job [${job.id}] to: ${status[1]}`, e);
-        }
-      }
-    }
-  }
+async function queueCleanUp() {
+  await workerQueue.clean(0, 0, "completed");
+  console.log("All completed jobs removed!");
 }
 
 addJob();
