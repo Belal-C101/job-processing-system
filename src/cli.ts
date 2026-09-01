@@ -5,7 +5,9 @@
 import "dotenv/config";
 import { prisma } from "./lib/prisma";
 import * as readline from "node:readline/promises";
-import { workerQueue } from "./queue"
+import { workerQueue } from "./queue";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 export async function jobSystem() {
   const rl = readline.createInterface({
@@ -48,7 +50,7 @@ export async function jobSystem() {
       await workerQueue.add(`${jobType}`, {
         id: newJob.id,
         type: jobType,
-        createdAt: newJob.createdAt
+        createdAt: newJob.createdAt,
       });
     } else if (trimmedInput === "2") {
       const allJobs = await prisma.job.findMany({
@@ -192,6 +194,6 @@ export async function jobSystem() {
   rl.close();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === resolve(process.argv[1] ?? "")) {
   jobSystem();
 }
