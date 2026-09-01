@@ -58,23 +58,17 @@ export async function worker() {
         ...job.data,
         status: "PROCESSING",
       });
-      pushUpdate(job.data.id, job.data.status);
+      pushUpdate(job.data.id, job.data.status, job.opts.attempts);
     }
     start += pageSize;
   }
 }
 
-async function pushUpdate(id: UUID, status: string) {
-  let attempts = 0;
-
-      const updateattempts = await prisma.job.update({
-        where: { id: id },
-        data: { attempts: attempts },
-      });
-      const update = await prisma.job.update({
-        where: { id: id },
-        data: { status: status },
-      });
+async function pushUpdate(id: UUID, status: string, attempts?: number) {
+  await prisma.job.update({
+    where: { id: id },
+    data: { status: status, ...(attempts !== undefined && { attempts }) },
+  });
   queueCleanUp();
 }
 
